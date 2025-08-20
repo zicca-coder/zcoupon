@@ -26,7 +26,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring-boot.version>3.0.7</spring-boot.version>
+        <spring-boot.version>3.4.5</spring-boot.version>
         <spring-cloud.version>2022.0.3</spring-cloud.version>
         <spring-cloud-alibaba.version>2022.0.0.0-RC2</spring-cloud-alibaba.version>
         <mybatis-spring-boot-starter.version>3.0.2</mybatis-spring-boot-starter.version>
@@ -37,6 +37,7 @@
         <hutool-all.version>5.8.27</hutool-all.version>
         <redisson.version>3.27.2</redisson.version>
         <guava.version>30.0-jre</guava.version>
+        <caffeine.version>3.1.0</caffeine.version>
         <jsoup.version>1.15.3</jsoup.version>
         <knife4j-openapi3-jakarta-spring-boot-starter.version>4.5.0
         </knife4j-openapi3-jakarta-spring-boot-starter.version>
@@ -47,6 +48,8 @@
         <rocketmq-spring-boot-starter.version>2.3.0</rocketmq-spring-boot-starter.version>
         <spotless-maven-plugin.version>2.22.1</spotless-maven-plugin.version>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
+        <spring-ai.version>1.0.0</spring-ai.version>
+        <spring-ai-alibaba.version>1.0.0.2</spring-ai-alibaba.version>
     </properties>
 
     <dependencies>
@@ -125,6 +128,12 @@
             </dependency>
 
             <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>${caffeine.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.github.xiaoymin</groupId>
                 <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
                 <version>${knife4j-openapi3-jakarta-spring-boot-starter.version}</version>
@@ -160,8 +169,47 @@
                 <version>${rocketmq-spring-boot-starter.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.cloud.ai</groupId>
+                <artifactId>spring-ai-alibaba-bom</artifactId>
+                <version>${spring-ai-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <!-- spring ai 仓库 -->
+        <repository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>aliyunmaven</id>
+            <name>阿里云公共仓库</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
