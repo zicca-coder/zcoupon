@@ -18,6 +18,7 @@
         <module>search</module>
         <module>agent</module>
         <module>gateway</module>
+        <module>user-auth</module>
     </modules>
 
     <properties>
@@ -185,6 +186,12 @@
                 <scope>import</scope>
             </dependency>
 
+
+            <dependency>
+                <groupId>com.zicca.zcoupon</groupId>
+                <artifactId>zcoupon-framework</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

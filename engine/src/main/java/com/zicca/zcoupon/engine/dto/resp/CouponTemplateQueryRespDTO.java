@@ -1,10 +1,13 @@
-package com.zicca.zcoupon.merchant.admin.dto.resp;
+package com.zicca.zcoupon.engine.dto.resp;
 
-import com.zicca.zcoupon.merchant.admin.common.enums.CouponTemplateStatusEnum;
-import com.zicca.zcoupon.merchant.admin.common.enums.DiscountTargetEnum;
-import com.zicca.zcoupon.merchant.admin.common.enums.DiscountTypeEnum;
+import com.zicca.zcoupon.engine.common.enums.CouponTemplateStatusEnum;
+import com.zicca.zcoupon.engine.common.enums.DiscountTargetEnum;
+import com.zicca.zcoupon.engine.common.enums.DiscountTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -16,6 +19,9 @@ import java.util.List;
  * @author zicca
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "优惠券模板查询响应参数")
 public class CouponTemplateQueryRespDTO {
 

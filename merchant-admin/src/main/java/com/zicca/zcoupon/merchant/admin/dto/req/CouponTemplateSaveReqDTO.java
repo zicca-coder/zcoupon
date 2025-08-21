@@ -1,6 +1,6 @@
 package com.zicca.zcoupon.merchant.admin.dto.req;
 
-import com.zicca.zcoupon.merchant.admin.common.enums.CouponStatusEnum;
+import com.zicca.zcoupon.merchant.admin.common.enums.CouponTemplateStatusEnum;
 import com.zicca.zcoupon.merchant.admin.common.enums.DiscountTargetEnum;
 import com.zicca.zcoupon.merchant.admin.common.enums.DiscountTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -59,5 +59,5 @@ public class CouponTemplateSaveReqDTO {
     private Integer maxReceivePerUser;
 
     @Schema(description = "优惠券状态：0-未开始 1-进行中 2-已结束 3-已作废", example = "0")
-    private CouponStatusEnum status;
+    private CouponTemplateStatusEnum status;
 }

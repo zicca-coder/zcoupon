@@ -1,7 +1,7 @@
 package com.zicca.zcoupon.merchant.admin.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.zicca.zcoupon.merchant.admin.common.enums.CouponStatusEnum;
+import com.zicca.zcoupon.merchant.admin.common.enums.CouponTemplateStatusEnum;
 import com.zicca.zcoupon.merchant.admin.common.enums.DiscountTargetEnum;
 import com.zicca.zcoupon.merchant.admin.common.enums.DiscountTypeEnum;
 import lombok.AllArgsConstructor;
@@ -110,6 +110,6 @@ public class CouponTemplate extends Base {
      * 0：未开始 1：进行中 2：已结束 3：已作废
      */
     @TableField(value = "status")
-    private CouponStatusEnum status;
+    private CouponTemplateStatusEnum status;
 
 }

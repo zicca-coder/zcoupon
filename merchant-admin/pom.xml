@@ -19,9 +19,8 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>com.zicca.zcoupon</groupId>
             <artifactId>zcoupon-framework</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- 项目工具包相关依赖 -->

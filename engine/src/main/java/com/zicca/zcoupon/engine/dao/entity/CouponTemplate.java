@@ -1,13 +1,12 @@
-package com.zicca.zcoupon.merchant.admin.dao.entity;
+package com.zicca.zcoupon.engine.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.zicca.zcoupon.merchant.admin.common.enums.CouponTemplateStatusEnum;
-import com.zicca.zcoupon.merchant.admin.common.enums.DiscountTargetEnum;
-import com.zicca.zcoupon.merchant.admin.common.enums.DiscountTypeEnum;
-import com.zicca.zcoupon.merchant.admin.common.enums.ShopScopeTypeEnum;
+import com.zicca.zcoupon.engine.common.enums.CouponTemplateStatusEnum;
+import com.zicca.zcoupon.engine.common.enums.DiscountTargetEnum;
+import com.zicca.zcoupon.engine.common.enums.DiscountTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +16,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 平台优惠券模板实体类
+ * 店铺优惠券模板实体类
  *
  * @author zicca
  */
@@ -25,8 +24,8 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@TableName("t_coupon_template_platform")
-public class CouponTemplatePlatform extends Base {
+@TableName("t_coupon_template")
+public class CouponTemplate extends Base {
 
     /**
      * 主键
@@ -41,11 +40,11 @@ public class CouponTemplatePlatform extends Base {
     private String name;
 
     /**
-     * 适用店铺类型：
-     * 0：所有店铺可用，1：部分店铺可用
+     * 店铺编号
+     * 如果是店铺券：存储当前店铺编号
      */
-    @TableField(value = "shop_scope_type")
-    private ShopScopeTypeEnum shopScopeType;
+    @TableField(value = "shop_id")
+    private Long shopId;
 
     /**
      * 优惠对象:
@@ -115,4 +114,5 @@ public class CouponTemplatePlatform extends Base {
      */
     @TableField(value = "status")
     private CouponTemplateStatusEnum status;
+
 }
