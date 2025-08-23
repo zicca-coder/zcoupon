@@ -1,0 +1,10 @@
+2025-08-22 17:46:41.333 [main] INFO  [com.zicca.zcoupon.agent.ChatMemoryTest] - Starting ChatMemoryTest using Java 17.0.7 with PID 28872 (started by leeziqiang in E:\workspace\zcoupon\agent)
+2025-08-22 17:46:41.335 [main] INFO  [com.zicca.zcoupon.agent.ChatMemoryTest] - No active profile set, falling back to 1 default profile: "default"
+2025-08-22 17:46:42.957 [main] INFO  [o.s.b.a.logging.ConditionEvaluationReportLogger] - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-08-22 17:48:10.814 [main] INFO  [com.zicca.zcoupon.agent.ChatMemoryTest] - Starting ChatMemoryTest using Java 17.0.7 with PID 32412 (started by leeziqiang in E:\workspace\zcoupon\agent)
+2025-08-22 17:48:10.817 [main] INFO  [com.zicca.zcoupon.agent.ChatMemoryTest] - No active profile set, falling back to 1 default profile: "default"
+2025-08-22 17:48:12.568 [main] INFO  [o.s.b.a.logging.ConditionEvaluationReportLogger] - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.

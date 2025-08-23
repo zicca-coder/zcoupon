@@ -1,0 +1,36 @@
+server:
+  port: 10080
+spring:
+  application:
+    name: agent
+  datasource:
+    url: jdbc:mysql://192.168.17.128:3306/zcoupon?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: 192.168.17.128
+      port: 6379
+      timeout: 3000
+  ai:
+    openai:
+      api-key: sk-Vk97glBeYQjmlkb7dPhcYdNDdOZljSHYtEIytJqB536kb26u
+      base-url: https://chatapi.littlewheat.com
+    deepseek:
+      api-key: sk-734278d90584471e98e7ee0058835104
+      chat:
+        options:
+          model: deepseek-reasoner
+    dashscope:
+      api-key: sk-50f0cffc158046dcbbf7709e8a05e84f
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: qwen3:4b
+    chat:
+      memory:
+          repository:
+              jdbc:
+                initialize-schema: always
+                schema: classpath:/schema/mysql.sql
