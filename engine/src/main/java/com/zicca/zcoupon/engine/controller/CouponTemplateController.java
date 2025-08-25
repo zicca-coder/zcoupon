@@ -1,10 +1,10 @@
-package com.zicca.zcoupon.merchant.admin.controller;
+package com.zicca.zcoupon.engine.controller;
 
-
+import com.zicca.zcoupon.engine.dto.req.CouponTemplateQueryReqDTO;
+import com.zicca.zcoupon.engine.dto.resp.CouponTemplateQueryRespDTO;
+import com.zicca.zcoupon.engine.service.CouponTemplateService;
 import com.zicca.zcoupon.framework.result.Result;
 import com.zicca.zcoupon.framework.web.Results;
-import com.zicca.zcoupon.merchant.admin.dto.req.CouponTemplateSaveReqDTO;
-import com.zicca.zcoupon.merchant.admin.service.CouponTemplateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,23 +23,20 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/admin/merchant/template")
+@RequestMapping("/api/engine/template")
 @Tag(name = "优惠券模板管理", description = "优惠券模板接口管理")
 public class CouponTemplateController {
 
     private final CouponTemplateService couponTemplateService;
 
-
-    @PostMapping("/create")
-    @Operation(summary = "创建优惠券模板", description = "创建优惠券模板")
+    @PostMapping("/query")
+    @Operation(summary = "查询优惠券模板", description = "查询优惠券模板")
     @ApiResponse(
-            responseCode = "200", description = "创建优惠券模板成功",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Result.class))
+            responseCode = "200", description = "查询优惠券模板成功",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = CouponTemplateQueryRespDTO.class))
     )
-    public Result<Void> createCouponTemplate(@RequestBody CouponTemplateSaveReqDTO requestParam) {
-        couponTemplateService.createCouponTemplate(requestParam);
-        return Results.success();
+    public Result<CouponTemplateQueryRespDTO> query(@RequestBody CouponTemplateQueryReqDTO requestParam) {
+        return Results.success(couponTemplateService.findCouponTemplate(requestParam));
     }
-
 
 }

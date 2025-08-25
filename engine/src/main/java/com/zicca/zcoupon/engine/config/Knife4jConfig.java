@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class Knife4jConfig implements ApplicationRunner {
 
-    @Value("10010")
+    @Value("${server.port}")
     private String serverPort;
     @Value("${server.servlet.context-path}")
     private String contextPath;

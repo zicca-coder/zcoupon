@@ -59,7 +59,7 @@ public class CouponTemplateEventProducer extends AbstractCommonProducerTemplate<
                         .topic(COUPON_TEMPLATE_EVENT_TOPIC)
                         .tag("ACTIVE")
                         .keys(event.getOperationType() + ":" + event.getCouponTemplateId())
-                        .sentTimeout(2000L)
+                        .sentTimeout(5000L)
                         .build();
             case "EXPIRE":
                 return BaseSendExtendDTO.builder()
@@ -67,7 +67,7 @@ public class CouponTemplateEventProducer extends AbstractCommonProducerTemplate<
                         .topic(COUPON_TEMPLATE_EVENT_TOPIC)
                         .tag("EXPIRE")
                         .keys(event.getOperationType() + ":" + event.getCouponTemplateId())
-                        .sentTimeout(2000L)
+                        .sentTimeout(5000L)
                         .delayTime(event.getOperationTime())
                         .build();
             default:

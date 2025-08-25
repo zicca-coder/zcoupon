@@ -2,7 +2,7 @@ spring:
   application:
     name: coupon-merchant-admin
   datasource:
-    url: jdbc:mysql://192.168.17.128:3306/coupon?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://192.168.17.128:3306/zcoupon?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
     username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -10,6 +10,22 @@ spring:
     redis:
       host: 192.168.17.128
       port: 6379
+#  config:
+#    import:
+#      - optional:nacos:application-${spring.profiles.active:dev}.yaml
+#      - optional:nacos:${spring.application.name}-${spring.profiles.active:dev}.yaml
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.17.128:8848
+        namespace: public
+        group: DEFAULT_GROUP
+#      config:
+#        server-addr: 192.168.17.128:8848
+#        namespace: public
+#        group: DEFAULT_GROUP
+
+
 server:
   port: 10010
   servlet:
@@ -18,6 +34,46 @@ server:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+seata:
+  enabled: true
+  data-source-proxy-mode: AT  # 使用 XA 模式避免 UndoLogManager 问题
+  application-id: coupon-merchant-admin
+  tx-service-group: default_tx_group
+  service:
+    vgroup-mapping:
+      default_tx_group: default
+  registry:
+    type: nacos
+    nacos:
+      application: seata-server
+      server-addr: 192.168.17.128:8848
+      group: DEFAULT_GROUP
+      username: nacos
+      password: nacos
+  config:
+    type: nacos
+    nacos:
+      server-addr: 192.168.17.128:8848
+      data-id: seataServer.properties
+      group: DEFAULT_GROUP
+      username: nacos
+      password: nacos
+  client:
+    rm:
+      async-commit-buffer-limit: 1000
+      report-retry-count: 5
+      table-meta-check-enable: false
+      report-success-enable: false
+      saga-branch-register-enable: false
+      lock:
+        retry-interval: 10
+        retry-times: 30
+        retry-policy-branch-rollback-on-conflict: true
+    undo:
+      log-table: undo_log
+      log-serialization: fastjson
+  enable-auto-data-source-proxy: false
 
 
 springdoc:
@@ -38,3 +94,15 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+rocketmq:
+  name-server: 192.168.17.128:9876
+  producer:
+    group: merchant-admin-producer-group
+    send-message-timeout: 10000
+    retry-times-when-send-failed: 1
+    retry-times-when-send-async-failed: 1
+
+logging:
+  level:
+    com.alibaba.nacos.client.logging: ERROR

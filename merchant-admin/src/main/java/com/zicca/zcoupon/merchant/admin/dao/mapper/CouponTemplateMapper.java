@@ -2,6 +2,7 @@ package com.zicca.zcoupon.merchant.admin.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.zicca.zcoupon.merchant.admin.dao.entity.CouponTemplate;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**

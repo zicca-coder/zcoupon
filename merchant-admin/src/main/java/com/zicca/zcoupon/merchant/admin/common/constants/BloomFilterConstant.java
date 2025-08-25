@@ -7,5 +7,5 @@ package com.zicca.zcoupon.merchant.admin.common.constants;
  */
 public class BloomFilterConstant {
 
-    public static final String COUPON_TEMPLATE_REDIS_BLOOM_FILTER = "coupon:filter:template:couponTemplateBloomFilter";
+    public static final String COUPON_TEMPLATE_REDIS_BLOOM_FILTER = "zcoupon:filter:template:couponTemplateBloomFilter";
 }

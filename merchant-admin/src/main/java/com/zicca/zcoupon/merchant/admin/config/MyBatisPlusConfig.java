@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.zicca.zcoupon.merchant.admin.common.context.UserContext;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,17 +46,15 @@ public class MyBatisPlusConfig {
             // fieldName: Java实体类中的属性名
             strictInsertFill(metaObject, "createTime", Date::new, Date.class);
             strictInsertFill(metaObject, "updateTime", Date::new, Date.class);
-            // todo: 此处应该填充当前登录用户信息
-            strictInsertFill(metaObject, "createBy", () -> "admin", String.class);
-            strictInsertFill(metaObject, "updateBy", () -> "admin", String.class);
+            strictInsertFill(metaObject, "createBy", UserContext::getUsername, String.class);
+            strictInsertFill(metaObject, "updateBy", UserContext::getUsername, String.class);
             strictInsertFill(metaObject, "delFlag", () -> 0, Integer.class);
         }
 
         @Override
         public void updateFill(MetaObject metaObject) {
             strictUpdateFill(metaObject, "updateTime", Date::new, Date.class);
-            // todo: 此处应该填充当前登录用户信息
-            strictUpdateFill(metaObject, "updateBy", () -> "admin", String.class);
+            strictUpdateFill(metaObject, "updateBy", UserContext::getUsername, String.class);
         }
     }
 

@@ -2,7 +2,7 @@ spring:
   application:
     name: engine
   datasource:
-    url: jdbc:mysql://192.168.17.128:3306/coupon?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://192.168.17.128:3306/zcoupon?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
     username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver

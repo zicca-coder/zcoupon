@@ -4,7 +4,9 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.google.common.hash.BloomFilter;
 import com.zicca.zcoupon.framework.exeception.ServiceException;
+import com.zicca.zcoupon.merchant.admin.common.context.UserContext;
 import com.zicca.zcoupon.merchant.admin.common.enums.CouponTemplateStatusEnum;
 import com.zicca.zcoupon.merchant.admin.dao.entity.CouponTemplate;
 import com.zicca.zcoupon.merchant.admin.dao.mapper.CouponTemplateMapper;
@@ -14,10 +16,11 @@ import com.zicca.zcoupon.merchant.admin.dto.resp.CouponTemplateQueryRespDTO;
 import com.zicca.zcoupon.merchant.admin.mq.event.CouponTemplateEvent;
 import com.zicca.zcoupon.merchant.admin.mq.producer.CouponTemplateEventProducer;
 import com.zicca.zcoupon.merchant.admin.service.CouponTemplateService;
+import io.seata.core.context.RootContext;
+import io.seata.spring.annotation.GlobalLock;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
-import org.apache.curator.shaded.com.google.common.hash.BloomFilter;
 import org.redisson.api.RBloomFilter;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -54,19 +57,22 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
     private final DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(LUA_SCRIPT, Long.class);
 
 
-    @Transactional(rollbackFor = Exception.class)
+    // 临时使用本地事务，避免 Seata UndoLogManager 问题
+    @GlobalTransactional(rollbackFor = Exception.class)
     @Override
     public void createCouponTemplate(CouponTemplateSaveReqDTO requestParam) {
-
         // 新增优惠券模板到数据库
         CouponTemplate template = BeanUtil.toBean(requestParam, CouponTemplate.class);
         template.setStatus(CouponTemplateStatusEnum.NOT_START);
-        // todo: 设置店铺 ID
+        template.setShopId(UserContext.getShopId());
         save(template);
+//        System.out.println(1/0);
+        // todo: 向优惠券商品关联表中插入数据
         // 优惠券模板信息存储到本地缓存，仅当优惠券模板生效才存储
         // 优惠券模板信息存储到分布式缓存
         // 分布式缓存过期时间：优惠券有效期结束时间
         CouponTemplateQueryRespDTO respDTO = BeanUtil.toBean(template, CouponTemplateQueryRespDTO.class);
+        respDTO.setGoodIds(requestParam.getGoodIds());
         Map<String, String> templateCacheHashMap = BeanUtil
                 .beanToMap(respDTO, false, true)
                 .entrySet().stream()
@@ -83,12 +89,14 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
         });
         // 优惠券活动过期时间转换为秒级别的 Unix 时间戳
         args.add(String.valueOf(template.getValidEndTime().getTime() / 1000));
-        stringRedisTemplate.execute(redisScript, keys, args);
+        // todo: 当缓存更新后，后续代码出错，数据库回滚，但是Redis无法回滚，导致数据不一致
+        stringRedisTemplate.execute(redisScript, keys, args.toArray());
         // 发送延时消息事件，优惠券模板活动开始自动 修改数据库和缓存中优惠券模板状态为进行中
         CouponTemplateEvent templateActiveEvent = CouponTemplateEvent.builder()
                 .operationType("ACTIVE")
                 .couponTemplateId(template.getId())
                 .shopId(template.getShopId())
+                .operationTime(template.getValidStartTime().getTime())
                 .build();
         couponTemplateEventProducer.sendMessage(templateActiveEvent);
 
@@ -100,7 +108,9 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
                 .operationTime(template.getValidEndTime().getTime())
                 .build();
         couponTemplateEventProducer.sendMessage(templateExpireEvent);
+
         // 添加优惠券模板 ID 到本地布隆过滤器
+        // todo: 发送消息给引擎模块，添加优惠券模板 ID 到本地布隆过滤器
         couponTemplateGuavaBloomFilter.put(template.getId());
         // 添加优惠券模板 ID 到分布式布隆过滤器
         couponTemplateRedisBloomFilter.add(template.getId());
@@ -140,23 +150,22 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
                 .update();
         // 修改缓存中优惠券模板状态为进行中
         String couponTemplateCacheKey = COUPON_TEMPLATE_KEY + couponTemplateId;
-        List<Object> results = stringRedisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-            // 更新优惠券模板状态
-            connection.hashCommands().hSet(couponTemplateCacheKey.getBytes(), "status".getBytes(), CouponTemplateStatusEnum.IN_PROGRESS.toString().getBytes());
-            // 获取整个优惠券模板信息
-            connection.hashCommands().hGetAll(couponTemplateCacheKey.getBytes());
-            return null;
-        });
-        // 处理返回结果
-        Map<byte[], byte[]> rawCacheData = (Map<byte[], byte[]>) results.get(1);
+        // 使用类型安全的操作
+        stringRedisTemplate.opsForHash().put(couponTemplateCacheKey, "status", CouponTemplateStatusEnum.IN_PROGRESS.toString());
+
+        // 获取整个优惠券模板信息
+        Map<Object, Object> rawCacheData = stringRedisTemplate.opsForHash().entries(couponTemplateCacheKey);
+
+        // 转换为字符串映射
         Map<String, String> cacheHashMap = rawCacheData.entrySet().stream()
+                .filter(entry -> entry.getKey() != null && entry.getValue() != null)
                 .collect(Collectors.toMap(
-                        entry -> new String(entry.getKey()),
-                        entry -> new String(entry.getValue())
+                        entry -> entry.getKey().toString(),
+                        entry -> entry.getValue().toString()
                 ));
         CouponTemplateQueryRespDTO result = new CouponTemplateQueryRespDTO();
         result = BeanUtil.fillBeanWithMap(cacheHashMap, result, true);
-        // 同步到本地缓存
+        // todo: 同步到本地缓存 这里应该向引擎服务的本地缓存中同步，后管服务不需要设置本地缓存
         CouponTemplateQueryRespDTO localResult = new CouponTemplateQueryRespDTO();
         BeanUtil.copyProperties(result, localResult);
         caffeineCache.put(couponTemplateId, localResult);
@@ -182,6 +191,7 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
         String couponTemplateCacheKey = COUPON_TEMPLATE_KEY + couponTemplateId;
         stringRedisTemplate.delete(couponTemplateCacheKey);
         // 删除本地缓存中的优惠券模板
+        // todo: 同步到本地缓存 这里应该向引擎服务的本地缓存中同步，后管服务不需要设置本地缓存
         caffeineCache.invalidate(couponTemplateId);
     }
 
@@ -205,6 +215,7 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
         String couponTemplateCacheKey = COUPON_TEMPLATE_KEY + couponTemplateId;
         stringRedisTemplate.delete(couponTemplateCacheKey);
         // 删除本地缓存中的优惠券模板
+        // todo: 同步到本地缓存 这里应该向引擎服务的本地缓存中同步，后管服务不需要设置本地缓存
         caffeineCache.invalidate(couponTemplateId);
     }
 
@@ -228,6 +239,7 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
         String couponTemplateCacheKey = COUPON_TEMPLATE_KEY + requestParam.getCouponTemplateId();
         stringRedisTemplate.opsForHash().increment(couponTemplateCacheKey, "stock", requestParam.getNumber());
         // 增加本地缓存中的优惠券模板库存
+        // todo: 同步到本地缓存 这里应该向引擎服务的本地缓存中同步，后管服务不需要设置本地缓存
         CouponTemplateQueryRespDTO localCache = caffeineCache.getIfPresent(requestParam.getCouponTemplateId());
         if (localCache != null) {
             localCache.setStock(localCache.getStock() + requestParam.getNumber());

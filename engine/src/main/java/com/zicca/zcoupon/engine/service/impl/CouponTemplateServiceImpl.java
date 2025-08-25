@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.google.common.hash.BloomFilter;
 import com.zicca.zcoupon.engine.common.enums.CouponTemplateStatusEnum;
 import com.zicca.zcoupon.engine.dao.entity.CouponTemplate;
 import com.zicca.zcoupon.engine.dao.mapper.CouponTemplateMapper;
@@ -13,7 +14,6 @@ import com.zicca.zcoupon.engine.service.CouponTemplateService;
 import com.zicca.zcoupon.framework.exeception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.curator.shaded.com.google.common.hash.BloomFilter;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -60,14 +60,17 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
         if (localCache != null) {
             // 判断是否空值标识
             if (nullValueMarker.equals(localCache.getId())) {
+                log.info("本地缓存中查询到空值");
                 throw new ServiceException("请求优惠券模板不存在...");
             }
             // 不是空值标识，代表有效值，直接返回
+            log.info("本地缓存中查询到有效值");
             return localCache;
         }
         // 2. 判断本地布隆过滤器
         if (!couponTemplateGuavaBloomFilter.mightContain(couponTemplateId)) {
             // 证明确实不存在
+            log.info("本地布隆过滤器中不存在");
             CouponTemplateQueryRespDTO nullCache = CouponTemplateQueryRespDTO.builder().id(nullValueMarker).build();
             caffeineCache.put(couponTemplateId, nullCache);
             throw new ServiceException("请求优惠券模板不存在...");
@@ -78,11 +81,13 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
             // 判断是否为空值标识
             if (nullValueMarker.equals(cacheHashMap.get("id"))) {
                 // 向本地缓存同步空值标识
+                log.info("分布式缓存中查询到空值");
                 CouponTemplateQueryRespDTO nullCache = CouponTemplateQueryRespDTO.builder().id(nullValueMarker).build();
                 caffeineCache.put(couponTemplateId, nullCache);
                 throw new ServiceException("请求优惠券模板不存在...");
             }
             // 不是空值，代表有效值
+            log.info("分布式缓存中查询到有效值");
             CouponTemplateQueryRespDTO result = new CouponTemplateQueryRespDTO();
             result = BeanUtil.fillBeanWithMap(cacheHashMap, result, true);
             // 同步到本地缓存
@@ -94,6 +99,7 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
         // 4. 查询 Redis 布隆过滤器
         if (!couponTemplateRedisBloomFilter.contains(couponTemplateId)) {
             // 证明确实不存在，向 Redis 中和 Caffeine 中同步该key为空值标识
+            log.info("分布式布隆过滤器中不存在");
             List<String> keys = Collections.singletonList(couponTemplateCacheKey);
             List<String> args = new ArrayList<>(3);
             args.add("id");
